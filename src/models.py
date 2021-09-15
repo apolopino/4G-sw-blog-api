@@ -17,8 +17,12 @@ class Planets(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "population": self.population
+            "population": self.population,
+            "people": self.getPeople(),
         }
+    
+    def getPeople(self):
+        return list(map(lambda x: x.serialize(), self.people))
 
 class People(db.Model):
     __tablename__ = 'people'
@@ -26,7 +30,7 @@ class People(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     gender = db.Column(db.String(80), nullable=False)
     planet = db.Column(db.Integer, db.ForeignKey('planets.id'))
-    # planet_name = db.relationship ('Planets', lazy=True)
+    # planet_name = db.relationship ('Planets', backref='people', lazy=True)
     people_favs = db.relationship('FavPeople', backref="people", lazy=True)
 
     def __repr__(self):
