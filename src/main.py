@@ -119,7 +119,7 @@ def post_fav_people(pid):
 
 @app.route('/favorite/planet/<int:pid>', methods=['DELETE'])
 def delete_fav_planet(pid):
-    element = FavPlanet.query.get(pid)
+    element = FavPlanet.query.filter_by(planet_id=pid).first()
     body = request.get_json()
     user = body['user_id']
 
@@ -144,7 +144,7 @@ def delete_fav_planet(pid):
 
 @app.route('/favorite/people/<int:pid>', methods=['DELETE'])
 def delete_fav_person(pid):
-    element = FavPeople.query.get(pid)
+    element = FavPeople.query.filter_by(people_id=pid).first()
     body = request.get_json()
     user = body['user_id']
 
