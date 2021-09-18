@@ -30,15 +30,6 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
-
 @app.route('/people', methods=['GET'])
 def get_people():
     response = People.query.all()
@@ -67,14 +58,114 @@ def get_planet(id):
 
     return jsonify(response), 200
 
-# @app.route('/userextras', methods = ['GET'])
-# def get_extras_all():
-#     extras = ExtrasUsuarios.query.all()
-#     extras = list(map(lambda x: x.serialize(), extras))
-#     response_body = {
-#         "extras": extras
-#     }
-#     return jsonify(response_body), 200
+@app.route('/users', methods=['GET'])
+def get_users():
+    response = User.query.all()
+    response = list(map(lambda x: x.serialize(), response))
+
+    return jsonify(response), 200
+
+@app.route('/users/favorites', methods=['GET'])
+def get_user_favs():
+    body = request.get_json()
+    user = body['user_id']
+
+    response_people = FavPeople.query.filter_by(user_id=user).all()
+    response_people = list(map(lambda x: x.serialize(), response_people))
+
+    response_planet = FavPlanet.query.filter_by(user_id=user).all()
+    response_planet = list(map(lambda x: x.serialize(), response_planet))
+
+    response = {
+        "Fav_People": response_people,
+        "Fav_Planets": response_planet
+    }
+
+    return jsonify(response), 200
+
+@app.route('/favorite/planet/<int:pid>', methods=['POST'])
+def post_fav_planet(pid):
+    body = request.get_json()
+    user = body['user_id']
+
+    element = FavPlanet(
+        planet_id= pid,
+        user_id=body['user_id'],
+        )
+    db.session.add(element)
+    db.session.commit()
+
+    response = FavPlanet.query.filter_by(user_id=user).all()
+    response = list(map(lambda x: x.serialize(), response))
+
+    return jsonify(response), 200
+
+@app.route('/favorite/people/<int:pid>', methods=['POST'])
+def post_fav_people(pid):
+    body = request.get_json()
+    user = body['user_id']
+
+    element = FavPeople(
+        people_id= pid,
+        user_id=body['user_id'],
+        )
+    db.session.add(element)
+    db.session.commit()
+
+    response = FavPeople.query.filter_by(user_id=user).all()
+    response = list(map(lambda x: x.serialize(), response))
+
+    return jsonify(response), 200
+
+@app.route('/favorite/planet/<int:pid>', methods=['DELETE'])
+def delete_fav_planet(pid):
+    element = FavPlanet.query.get(pid)
+    body = request.get_json()
+    user = body['user_id']
+
+    if not user: 
+        response = {
+            "msg": "user not defined"
+        }
+        return jsonify(response), 200
+
+    if not element:
+        response = {
+            "msg": "no such planet"
+        }
+        return jsonify(response), 200
+    
+    db.session.delete(element)
+    db.session.commit()
+    response = FavPlanet.query.filter_by(user_id=user).all()
+    response = list(map(lambda x: x.serialize(), response))
+
+    return jsonify(response), 200
+
+@app.route('/favorite/people/<int:pid>', methods=['DELETE'])
+def delete_fav_person(pid):
+    element = FavPeople.query.get(pid)
+    body = request.get_json()
+    user = body['user_id']
+
+    if not user: 
+        response = {
+            "msg": "user not defined"
+        }
+        return jsonify(response), 200
+
+    if not element:
+        response = {
+            "msg": "no such person"
+        }
+        return jsonify(response), 200
+    
+    db.session.delete(element)
+    db.session.commit()
+    response = FavPeople.query.filter_by(user_id=user).all()
+    response = list(map(lambda x: x.serialize(), response))
+
+    return jsonify(response), 200
 
 
 
